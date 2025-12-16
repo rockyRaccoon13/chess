@@ -12,6 +12,11 @@ public class QueenMovesCalculator implements PieceMovesCalculator {
     @Override
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition position) {
         Set<ChessMove> moves = new HashSet<>();
+        RookMovesCalculator rookMoveCalc = new RookMovesCalculator();
+        BishopMovesCalculator bishopMovesCalc = new BishopMovesCalculator();
+
+        moves.addAll(rookMoveCalc.pieceMoves(board,position));
+        moves.addAll(bishopMovesCalc.pieceMoves(board,position));
 
         return moves;
     }
