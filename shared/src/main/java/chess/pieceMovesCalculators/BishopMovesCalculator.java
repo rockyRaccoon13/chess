@@ -14,6 +14,7 @@ public class BishopMovesCalculator implements PieceMovesCalculator {
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition position) {
         Set<ChessMove> moves = new HashSet<>();
 
+        //step diag up+R
         int i = position.getRow();
         int j = position.getColumn();
         i++;
@@ -31,6 +32,7 @@ public class BishopMovesCalculator implements PieceMovesCalculator {
             j++;
         }
 
+        //step diag down+R
         i = position.getRow();
         j = position.getColumn();
         i--;
@@ -48,6 +50,7 @@ public class BishopMovesCalculator implements PieceMovesCalculator {
             j++;
         }
 
+        //step diag left+up
         i = position.getRow();
         j = position.getColumn();
         i++;
@@ -65,6 +68,7 @@ public class BishopMovesCalculator implements PieceMovesCalculator {
             j--;
         }
 
+        //step diag left+down
         i = position.getRow();
         j = position.getColumn();
         i--;
