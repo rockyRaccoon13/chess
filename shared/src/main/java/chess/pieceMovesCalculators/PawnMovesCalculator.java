@@ -8,91 +8,115 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class PawnMovesCalculator implements PieceMovesCalculator {
+
+    private final PieceType[] allowedPromotionTypes = {
+            PieceType.QUEEN,
+            PieceType.BISHOP,
+            PieceType.KNIGHT,
+            PieceType.ROOK};
+
+
     @Override
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition position) {
         Set<ChessMove> moves = new HashSet<>();
 
-        PieceType[] allowedPromotionTypes = {
-                PieceType.QUEEN,
-                PieceType.BISHOP,
-                PieceType.KNIGHT,
-                PieceType.ROOK};
 
         ChessGame.TeamColor pieceColor = board.getPiece((position)).getTeamColor();
-        ChessPosition endPosition;
-        final int startPosRow = position.getRow();
-        final int startPosCol = position.getColumn();
+        int forwardDirection = pieceColor == ChessGame.TeamColor.WHITE ? 1 : -1;
+        int promoRow = 1+ (pieceColor == ChessGame.TeamColor.WHITE ?
+                ChessBoard.blackBackLineRowIndex : ChessBoard.whiteBackLineRowIndex);
 
-        int pawnHomeRow =2;
-        int promoRow =8;
+        int homeRow = 1 + (pieceColor == ChessGame.TeamColor.WHITE ?
+                ChessBoard.whitePawnsRowIndex : ChessBoard.blackPawnsRowIndex);
 
-        int step =1;
-        if(pieceColor == ChessGame.TeamColor.BLACK){
-            pawnHomeRow = 7;
-            step = -1;
-            promoRow =1;
-
-        }
+        moves.addAll(getForwardMoves(board, position, forwardDirection, promoRow, homeRow));
+        moves.addAll(getDiagonalCaptureMoves(board, position, pieceColor, forwardDirection, promoRow));
 
 
+        return moves;
+    }
+
+    private boolean isEmpty(final ChessBoard board, final ChessPosition pos) {
+        return board.getPiece(pos) == null;
+    }
+
+    private Collection<ChessMove> getForwardMoves(ChessBoard board,
+                                                  ChessPosition startPosition,
+                                                  int forwardDirection, int promoRow, int homeRow) {
+
+        Collection<ChessMove> forwardMoves = new HashSet<>();
 
         // move 1, promote if results in end row
-        boolean canMove1Step = false;
-        endPosition = new ChessPosition(startPosRow + step, startPosCol);
-        if (board.getPiece(endPosition) == null) {
-            canMove1Step =true;
-            if(endPosition.getRow()==promoRow){
-                for(var pieceType: allowedPromotionTypes){
-                    moves.add(new ChessMove(position, endPosition, pieceType));
-                }
-            }
-            else {
-                moves.add(new ChessMove(position, endPosition, null));
+        int stepSize = 1;
+
+        boolean canMove1Step = false; //Used to check path clear for 2 step initial move
+        ChessPosition endPosition = new ChessPosition(
+                startPosition.getRow() + (stepSize * forwardDirection), startPosition.getColumn());
+
+
+
+        if (endPosition.isInBounds() && isEmpty(board, endPosition)) {
+            canMove1Step = true;
+            if (endPosition.getRow() == promoRow) {
+                forwardMoves.addAll(createPromotionMoves(startPosition, endPosition));
+
+            } else {
+                forwardMoves.add(new ChessMove(startPosition, endPosition, null));
             }
         }
 
         //move 2 if start
-        if ( startPosRow == pawnHomeRow && canMove1Step) {
-            endPosition = new ChessPosition(startPosRow + (step * 2), startPosCol);
-            if (board.getPiece(endPosition) == null) {
-                moves.add(new ChessMove(position, endPosition, null));
+        stepSize = 2;
+        if (startPosition.getRow() == homeRow && canMove1Step) {
+            endPosition = new ChessPosition(startPosition.getRow() + (stepSize * forwardDirection), startPosition.getColumn());
+
+            if (endPosition.isInBounds() &&  isEmpty(board, endPosition)) {
+                forwardMoves.add(new ChessMove(startPosition, endPosition, null));
             }
         }
+        return forwardMoves;
+    }
 
-        //diag right -- move diagonal attack (in bounds and if piece)
-        if(startPosCol +1 <=8) {
-            endPosition = new ChessPosition(startPosRow + step, startPosCol +1);
+
+    private Collection<ChessMove> getDiagonalCaptureMoves(final ChessBoard board,
+                                                          final ChessPosition startPosition,
+                                                          final ChessGame.TeamColor pieceColor,
+                                                          int forwardDirection, int promoRow) {
+
+        int[] columnOffsets = {-1, 1};
+        HashSet<ChessMove> captureMoves = new HashSet<>();
+
+        for (int colOffset : columnOffsets) {
+            ChessPosition endPosition = new ChessPosition(
+                    startPosition.getRow() + forwardDirection,
+                    startPosition.getColumn() + colOffset
+            );
+
+            if (!endPosition.isInBounds()){
+                continue;
+            }
+
+
             ChessPiece occupyingPiece = board.getPiece(endPosition);
-            if (board.getPiece(endPosition) != null && occupyingPiece.getTeamColor()!=pieceColor) {
-                if(endPosition.getRow()==promoRow){
-                    for(var pieceType: allowedPromotionTypes){
-                        moves.add(new ChessMove(position, endPosition, pieceType));
-                    }
-                }
-                else {
-                    moves.add(new ChessMove(position, endPosition, null));
+            if (board.getPiece(endPosition) != null && occupyingPiece.getTeamColor() != pieceColor) {
+                if (endPosition.getRow() == promoRow) {
+                    captureMoves.addAll(createPromotionMoves(startPosition,endPosition));
+                } else {
+                    captureMoves.add(new ChessMove(startPosition, endPosition, null));
                 }
             }
 
-
         }
 
-        //diag left -- move diagonal attack (in bounds and if piece)
-        if(startPosCol -1 >=1) {
-            endPosition = new ChessPosition(startPosRow + step, startPosCol -1);
-            ChessPiece occupyingPiece = board.getPiece(endPosition);
-            if (board.getPiece(endPosition) != null && occupyingPiece.getTeamColor()!=pieceColor) {
-                if(endPosition.getRow()==promoRow){
-                    for(var pieceType: allowedPromotionTypes){
-                        moves.add(new ChessMove(position, endPosition, pieceType));
-                    }
-                }
-                else {
-                    moves.add(new ChessMove(position, endPosition, null));
-                }
-            }
-        }
+        return captureMoves;
+    }
 
-        return moves;
+    private Collection<ChessMove> createPromotionMoves(ChessPosition startPosition, ChessPosition endPosition) {
+        var promotionMoves = new HashSet<ChessMove>();
+        for (var pieceType : allowedPromotionTypes) {
+            promotionMoves.add(new ChessMove(startPosition, endPosition, pieceType));
+        }
+        return promotionMoves;
     }
 }
+

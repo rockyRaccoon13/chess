@@ -26,12 +26,21 @@ public class ChessPosition {
         return this.row;
     }
 
+
     /**
      * @return which column this position is in
      * 1 codes for the left row
      */
     public int getColumn() {
         return this.col;
+    }
+
+    /**
+     * @return true if position is in bounds on board
+     */
+    public boolean isInBounds() {
+        return ((0 <= this.col -1 && this.col -1 < ChessBoard.boardRowColDimension)
+                &&  (0 <= this.row -1 && this.row -1 < ChessBoard.boardRowColDimension));
     }
 
     @Override

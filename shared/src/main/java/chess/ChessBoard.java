@@ -11,10 +11,29 @@ import java.util.Objects;
  */
 public class ChessBoard {
 
-    private ChessPiece[][] board = new ChessPiece[8][8];
+    public static final int boardRowColDimension = 8;
+    private final ChessPiece[][] board = new ChessPiece[boardRowColDimension][boardRowColDimension];
     public ChessBoard() {
         
     }
+
+
+    public static int whitePawnsRowIndex = 1;
+    public static int whiteBackLineRowIndex = 0;
+
+    public static int blackPawnsRowIndex = 6;
+    public static int blackBackLineRowIndex = 7;
+
+    ChessPiece.PieceType[] backlineOrder = {
+            ChessPiece.PieceType.ROOK,
+            ChessPiece.PieceType.KNIGHT,
+            ChessPiece.PieceType.BISHOP,
+            ChessPiece.PieceType.QUEEN,
+            ChessPiece.PieceType.KING,
+            ChessPiece.PieceType.BISHOP,
+            ChessPiece.PieceType.KNIGHT,
+            ChessPiece.PieceType.ROOK
+    };
 
     /**
      * Adds a chess piece to the chessboard
@@ -42,30 +61,17 @@ public class ChessBoard {
      * (How the game of chess normally starts)
      */
     public void resetBoard() {
-        int whitePawnsRowIndex = 1;
-        int whiteBackLineRowIndex = 0;
-        int blackPawnsRowIndex = 6;
-        int blackBackLineRowIndex = 7;
-
-        ChessPiece.PieceType[] backlineOrder = {
-                ChessPiece.PieceType.ROOK,
-                ChessPiece.PieceType.KNIGHT,
-                ChessPiece.PieceType.BISHOP,
-                ChessPiece.PieceType.QUEEN,
-                ChessPiece.PieceType.KING,
-                ChessPiece.PieceType.BISHOP,
-                ChessPiece.PieceType.KNIGHT,
-                ChessPiece.PieceType.ROOK
-        };
 
         for (var i=0; i < board.length; i++) {
+
+            //For each row set color to white/black if equal to pawn or backline row index
             ChessGame.TeamColor color = ChessGame.TeamColor.WHITE;
             if (i == blackPawnsRowIndex || i == blackBackLineRowIndex) {
                 color = ChessGame.TeamColor.BLACK;
             }
 
-            new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.PAWN);
             for (var j = 0; j < board[i].length; j++) {
+                // for each col (in each row) add appropriate piece and color
                 if (i == blackPawnsRowIndex || i == whitePawnsRowIndex) {
                     board[i][j] = new ChessPiece(color, ChessPiece.PieceType.PAWN);
                 } else if (i == blackBackLineRowIndex || i == whiteBackLineRowIndex) {
