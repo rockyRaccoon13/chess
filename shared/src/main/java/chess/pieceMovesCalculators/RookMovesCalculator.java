@@ -9,71 +9,16 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-public class RookMovesCalculator implements PieceMovesCalculator {
+public class RookMovesCalculator extends LinearMovesCalculator implements PieceMovesCalculator {
     @Override
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition position) {
         Set<ChessMove> moves = new HashSet<>();
 
-        //move up diag up+R
-        int i = position.getRow() + 1;
-        int j = position.getColumn();
-        while(i <= 8){
-            ChessPosition endPosition = new ChessPosition(i, j);
-            ChessPiece endPosPiece = board.getPiece(endPosition);
-            if (endPosPiece == null || board.getPiece(position).getTeamColor() != endPosPiece.getTeamColor()) {
-                moves.add(new ChessMove(position, endPosition, null));
-            }
-            if(endPosPiece != null){
-                break;
-            }
-            i++;
-        }
+        int[][] directions = {{1,0},{-1,0},{0,1},{0,-1}};
 
-        //move down
-        i = position.getRow() -1;
-        j = position.getColumn();
-        while(i >= 1){
-            ChessPosition endPosition = new ChessPosition(i, j);
-            ChessPiece endPosPiece = board.getPiece(endPosition);
-            if (endPosPiece == null || board.getPiece(position).getTeamColor() != endPosPiece.getTeamColor()) {
-                moves.add(new ChessMove(position, endPosition, null));
-            }
-            if(endPosPiece != null){
-                break;
-            }
-            i--;
+        for (int[] d : directions){
+            moves.addAll(getLinearMoves(board,position,d[0],d[1]));
         }
-
-        //move left
-        i = position.getRow();
-        j = position.getColumn() -1;
-        while(j >=1){
-            ChessPosition endPosition = new ChessPosition(i, j);
-            ChessPiece endPosPiece = board.getPiece(endPosition);
-            if (endPosPiece == null || board.getPiece(position).getTeamColor() != endPosPiece.getTeamColor()) {
-                moves.add(new ChessMove(position, endPosition, null));
-            }
-            if(endPosPiece != null){
-                break;
-            }
-            j--;
-        }
-
-        //move right
-        i = position.getRow();
-        j = position.getColumn() +1;
-        while(j <=8){
-            ChessPosition endPosition = new ChessPosition(i, j);
-            ChessPiece endPosPiece = board.getPiece(endPosition);
-            if (endPosPiece == null || board.getPiece(position).getTeamColor() != endPosPiece.getTeamColor()) {
-                moves.add(new ChessMove(position, endPosition, null));
-            }
-            if(endPosPiece != null){
-                break;
-            }
-            j++;
-        }
-
 
         return moves;
     }
